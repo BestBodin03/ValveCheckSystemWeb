@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ฟอร์มกรอกข้อมูลอาคาร</title>
+  <title>ฟอร์มกรอกข้อมูลวาล์ว</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -112,7 +112,7 @@
 <body>
 
 <div class="form-container">
-  <h2>ฟอร์มกรอกข้อมูลอาคาร</h2>
+  <h2>ฟอร์มกรอกข้อมูลวาล์ว</h2>
   <form id="buildingForm">
     <label for="inspector">ผู้ตรวจสอบ:</label>
     <input type="text" id="inspector" required>
@@ -126,9 +126,9 @@
     <label for="status">สถานะ:</label>
     <select id="status" required>
       <option value="">--เลือก--</option>
-      <option value=0>เปิด</option>
-      <option value=1>ปิด</option>
-      <option value=2>ปรับปรุง</option>
+      <option value="เปิด">เปิด</option>
+      <option value="ปิด">ปิด</option>
+      <option value="ปรับปรุง">ปรับปรุง</option>
     </select>
 
     <!-- 🔽 กล้อง -->
@@ -147,8 +147,8 @@
     <label for="notification">การเช็ค:</label>
     <select id="notification" required>
       <option value="">--เลือก--</option>
-      <option value=0>ไม่เช็ค X</option>
-      <option value=1>เช็ค O</option>
+      <option value="ไม่เช็ค X">ไม่เช็ค X</option>
+      <option value="เช็ค O">เช็ค O</option>
     </select>
 
     <label for="note">หมายเหตุ:</label>
@@ -278,9 +278,9 @@
     });
   }
 
-  // ฟังก์ชันส่งข้อมูลแบบ JSON
+  // ฟังก์ชันส่งข้อมูลแบบ JSON ลงฟอร์ม
   async function sendData(jsonData) {
-    const webhookUrl = "https://33acc8863c7ee40b9e78617193b531.80.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/72c8c5a1183041a9901eb3a35bdd2a6f/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentName=33acc886-3c7e-e40b-9e78-617193b53180&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=4VisyhpdKxQVXeB4iK3vrMwr_d23w9_M2MRruYcvWnQ"; // 🔄 แก้ URL ให้ถูก
+    const webhookUrl = "https://prod-32.southeastasia.logic.azure.com:443/workflows/7db7aa5783d941e8afda1347e44589b8/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sMZGnremrS7z-rCu5gHCDS_jdhqmW-y9BcaPDlyDRS4"; // 🔄 แก้ URL ให้ถูก
 
     try {
       console.log("📤 กำลังส่งข้อมูล...", jsonData);
@@ -323,6 +323,20 @@
         stream = null;
     }
   }
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  fetch("https://yourflow.com", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })  // ส่งไปหลังบ้านให้ดึงข้อมูลเอง
+  })
+  .then(res => res.json())
+  .then(data => {
+    // แสดงผลข้อมูล
+  });
+
 </script>
 
 </body>

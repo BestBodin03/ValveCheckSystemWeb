@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Valve Table</title>
+  <style>
+    table {
+      width: 1200px;
+      min-width: 1280px; /* บังคับให้มีความกว้างขั้นต่ำ */
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #f4f4f4; }
+    img { width: 144 }
+    .table-wrapper {
+      overflow-x: auto;
+      width: 1300px;
+
+    }
+  </style>
+</head>
+<body>
+
+<h2>Valve Data (From Power Automate)</h2>
+<div class="table-wrapper">
+    <table id="valveTable">
+        <thead>
+            <tr>
+            <th>Action</th>
+            <th>ID</th>
+            <th>Valve ID</th>
+            <th>Status</th>
+            <th>Checking</th>
+            <th>Standard Image</th>
+            <th>Current Image</th>
+            <th>Round</th>
+            <th>Brand</th>
+            <th>Zone</th>
+            <th>Check Date</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+
+<script>
+  const url = "https://prod-20.southeastasia.logic.azure.com:443/workflows/0bb2b8bd03d94015b71e801503d2a845/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uQwUtvsX5dBKd64l0Hq7aUGM1t9tIQLlO4i0aQtbu6k"; // แปะ URL จริงจาก Flow
+
+  fetch(url, {
+    method: "POST", // หรือ GET ถ้า Flow รองรับ
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({}) // หาก Flow ต้องการ input ก็ส่งในนี้
+  })
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.querySelector("#valveTable tbody");
+
+    data.value.forEach(item => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td><button class="btn-check" data-id="${item.ID}">ตรวจสอบ</button></td>
+        <td>${item.ID}</td>
+        <td>${item.ValveId}</td>
+        <td>${item.ValveStatus?.Value || "-"}</td>
+        <td>${item.ValveIsCheck?.Value || "-"}</td>
+        <td><img src="${item.ValveStandardImageUrl}" alt="ไม่มีรูป" style="max-width:144px; max-height:144px;" /></td>
+        <td><img src="${item.ValveCurrentImageUrl}" alt="ไม่มีรูป" style="max-width:144px; max-height:144px;" /></td>
+        <td>${item.ValveCheckRound}</td>
+        <td>${item.ValveBrand}</td>
+        <td>${item.ZoneFK?.Value || "-"}</td>
+        <td>${new Date(item.ValveCheckDate).toLocaleString("th-TH")}</td>
+    `;
+    tbody.appendChild(row);
+    });
+
+      document.querySelectorAll(".btn-check").forEach(button => {
+    button.addEventListener("click", (e) => {
+      const id = e.target.getAttribute("data-id");
+      window.location.href = `index.html?id=${encodeURIComponent(id)}`;
+    });
+  });
+  })
+  .catch(error => {
+    console.error("เกิดข้อผิดพลาด:", error);
+  });
+</script>
+
+</body>
+</html>
