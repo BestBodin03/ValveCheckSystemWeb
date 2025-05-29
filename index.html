@@ -165,7 +165,7 @@
       <option value="ปรับปรุง">ปรับปรุง</option>
     </select>
 
-    <!-- 🔽 กล้อง -->
+    <!-- 🔽 กล้อง
     <div class="camera-container">
       <label>กล้องถ่ายภาพ:</label>
       <video id="video" autoplay playsinline style="display: none;"></video>
@@ -175,6 +175,31 @@
         <button type="button" class="btn-blue" onclick="openCamera()">📷 เปิดกล้อง</button>
         <button type="button" class="btn-yellow" onclick="captureImage()">📸 ถ่ายภาพ</button>
       </div>
+    </div> -->
+
+        <div class="camera-container">
+        <label>กล้องถ่ายภาพ:</label>
+        
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+        
+        <div class="camera-info" id="cameraInfo">
+            กดเปิดกล้องเพื่อเริ่มใช้งาน
+        </div>
+        
+        <div class="button-row">
+            <button type="button" class="btn-blue" id="openCameraBtn" onclick="openCamera()">
+                📷 เปิดกล้อง
+            </button>
+            <button type="button" class="btn-green" id="swapCameraBtn" onclick="swapCamera()" disabled>
+                🔄 สลับกล้อง
+            </button>
+            <button type="button" class="btn-yellow" id="captureBtn" onclick="captureImage()" disabled>
+                📸 ถ่ายภาพ
+            </button>
+        </div>
+        
+        <div class="captured-image" id="capturedImageContainer"></div>
     </div>
 
 
@@ -193,31 +218,205 @@
 </div>
 
 <script>
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  let stream;
-
-  async function openCamera() {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-      video.style.display = "block";
-    } catch (err) {
-      alert("ไม่สามารถเปิดกล้อง: " + err.message);
-    }
-  }
-
-  function captureImage() {
-    if (!stream) {
-      alert("⚠️ กรุณาเปิดกล้องก่อน");
-      return;
-    }
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    canvas.style.display = "block";
-  }
+        let currentStream = null;
+        let currentFacingMode = 'environment'; // 'user' = front, 'environment' = rear
+        let availableCameras = [];
+        let currentCameraIndex = 0;
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const cameraInfo = document.getElementById('cameraInfo');
+        
+        // ปุ่มต่างๆ
+        const openCameraBtn = document.getElementById('openCameraBtn');
+        const swapCameraBtn = document.getElementById('swapCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const closeCameraBtn = document.getElementById('closeCameraBtn');
+        
+        // ตรวจสอบกล้องที่มีอยู่
+        async function getAvailableCameras() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableCameras = devices.filter(device => device.kind === 'videoinput');
+                
+                console.log('Available cameras:', availableCameras);
+                
+                if (availableCameras.length > 1) {
+                    cameraInfo.textContent = `พบกล้อง ${availableCameras.length} ตัว - สามารถสลับได้`;
+                } else if (availableCameras.length === 1) {
+                    cameraInfo.textContent = `พบกล้อง 1 ตัว`;
+                    swapCameraBtn.style.display = 'none'; // ซ่อนปุ่มสลับถ้ามีกล้องเดียว
+                } else {
+                    cameraInfo.textContent = `ไม่พบกล้อง`;
+                }
+                
+                return availableCameras.length > 0;
+            } catch (error) {
+                console.error('Error getting cameras:', error);
+                cameraInfo.textContent = 'ไม่สามารถตรวจสอบกล้องได้';
+                return false;
+            }
+        }
+        
+        // เปิดกล้อง
+        async function openCamera() {
+            try {
+                // ปิดกล้องเก่าก่อน (ถ้ามี)
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // ตรวจสอบกล้องที่มีอยู่
+                const hasCameras = await getAvailableCameras();
+                if (!hasCameras) {
+                    alert('ไม่พบกล้องในอุปกรณ์นี้');
+                    return;
+                }
+                
+                let constraints;
+                
+                // ถ้ามีกล้องหลายตัว ใช้ deviceId
+                if (availableCameras.length > 1) {
+                    constraints = {
+                        video: {
+                            deviceId: { exact: availableCameras[currentCameraIndex].deviceId },
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+                } else {
+                    // ถ้ามีกล้องเดียว ใช้ facingMode
+                    constraints = {
+                        video: {
+                            facingMode: currentFacingMode,
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+                }
+                
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+                
+                // แสดง video และซ่อน canvas
+                video.style.display = 'block';
+                canvas.style.display = 'none';
+                
+                // อัพเดทสถานะปุ่ม
+                openCameraBtn.disabled = true;
+                swapCameraBtn.disabled = availableCameras.length <= 1;
+                captureBtn.disabled = false;
+                closeCameraBtn.disabled = false;
+                
+                // อัพเดทข้อมูลกล้อง
+                const currentCamera = availableCameras[currentCameraIndex];
+                const cameraName = currentCamera?.label || `กล้อง ${currentCameraIndex + 1}`;
+                cameraInfo.textContent = `กำลังใช้: ${cameraName}`;
+                
+            } catch (error) {
+                console.error('Error opening camera:', error);
+                let errorMessage = 'ไม่สามารถเปิดกล้องได้';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = 'กรุณาอนุญาตการใช้งานกล้อง';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = 'ไม่พบกล้องในอุปกรณ์';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage = 'กล้องถูกใช้งานโดยแอปอื่น';
+                }
+                
+                alert(errorMessage);
+                cameraInfo.textContent = errorMessage;
+            }
+        }
+        
+        // สลับกล้อง
+        async function swapCamera() {
+            if (availableCameras.length <= 1) {
+                alert('มีกล้องเพียงตัวเดียว ไม่สามารถสลับได้');
+                return;
+            }
+            
+            try {
+                // เปลี่ยนไปกล้องถัดไป
+                currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+                
+                // สลับ facingMode ด้วย (สำหรับกรณีที่ไม่มี deviceId)
+                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+                
+                cameraInfo.textContent = 'กำลังสลับกล้อง...';
+                
+                // เปิดกล้องใหม่
+                await openCamera();
+                
+            } catch (error) {
+                console.error('Error swapping camera:', error);
+                alert('ไม่สามารถสลับกล้องได้');
+                cameraInfo.textContent = 'เกิดข้อผิดพลาดในการสลับกล้อง';
+            }
+        }
+        
+        // ถ่ายภาพ
+        function captureImage() {
+            if (!currentStream) {
+                alert('กรุณาเปิดกล้องก่อนถ่ายภาพ');
+                return;
+            }
+            
+            try {
+                // ตั้งค่าขนาด canvas ตามขนาดวิดีโอ
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                // วาดภาพจากวิดีโอลงใน canvas
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // แสดง canvas และซ่อน video
+                canvas.style.display = 'block';
+                video.style.display = 'none';
+                
+                // สร้างภาพและแสดงผล
+                const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                const capturedImageContainer = document.getElementById('capturedImageContainer');
+                capturedImageContainer.innerHTML = `
+                    <h3>ภาพที่ถ่าย:</h3>
+                    <img src="${imageDataUrl}" alt="Captured Image">
+                    <br><br>
+                    <button type="button" class="btn-green" onclick="downloadImage('${imageDataUrl}')">
+                        💾 ดาวน์โหลด
+                    </button>
+                    <button type="button" class="btn-blue" onclick="retakePhoto()">
+                        🔄 ถ่ายใหม่
+                    </button>
+                `;
+                
+                cameraInfo.textContent = 'ถ่ายภาพเรียบร้อย!';
+                
+                // อัพเดทสถานะปุ่ม
+                captureBtn.disabled = true;
+                
+            } catch (error) {
+                console.error('Error capturing image:', error);
+                alert('ไม่สามารถถ่ายภาพได้');
+            }
+        }
+        
+        // ถ่ายภาพใหม่
+        function retakePhoto() {
+            // แสดง video และซ่อน canvas
+            video.style.display = 'block';
+            canvas.style.display = 'none';
+            
+            // ล้างภาพที่ถ่าย
+            document.getElementById('capturedImageContainer').innerHTML = '';
+            
+            // อัพเดทสถานะปุ่ม
+            captureBtn.disabled = false;
+            
+            cameraInfo.textContent = `กำลังใช้: ${availableCameras[currentCameraIndex]?.label || `กล้อง ${currentCameraIndex + 1}`}`;
+        }
 
   // ปรับปรุงฟังก์ชันส่งข้อมูลให้ส่งเป็น JSON แทน FormData
   document.getElementById('buildingForm').addEventListener('submit', async function(e) {
