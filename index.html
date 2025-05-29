@@ -115,11 +115,37 @@
     background-color: #e6b800;
   }
 
+          .back-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 7rem;
+        }
+        
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+        
+        .back-button::before {
+            content: "←";
+            font-size: 16px;
+            font-weight: bold;
+        }
+
   </style>
 </head>
 <body>
 
 <div class="form-container">
+  <button class="back-button" onclick="goBack()">กลับ</button>
   <h2>ฟอร์มกรอกข้อมูลวาล์ว</h2>
   <form id="buildingForm">
     <label for="inspector">ผู้ตรวจสอบ:</label>
@@ -372,6 +398,16 @@
 
         img.src = imageUrlCurrent;
       }
+
+             function goBack() {
+            // ตรวจสอบว่ามี history หรือไม่
+            if (document.referrer && document.referrer.includes('tableValve.html')) {
+                window.history.back();
+            } else {
+                // หากไม่มี history หรือไม่ได้มาจาก tableValve.html ให้ redirect ตรงไป
+                window.location.href = 'tableValve.html';
+            }
+        }
 
   });
 
