@@ -29,8 +29,16 @@
       display: block;
       margin-bottom: 5px;
     }
-    input, select, textarea, button {
+    select, button {
       width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    input,textarea {
+      width: 96%;
       padding: 10px;
       margin-bottom: 20px;
       border-radius: 6px;
@@ -61,8 +69,8 @@
       background-color: #fefefe;
     }
     video, canvas {
-      width: 100%;
-      max-width: 100%;
+      width: 60%;
+      max-width: 60%;
       border-radius: 8px;
       margin-bottom: 10px;
     }
@@ -118,7 +126,7 @@
     <input type="text" id="inspector" required>
 
     <label for="round">ครั้งที่:</label>
-    <input type="text" id="round" readonly value="1">
+    <input type="text" id="round" readonly value=>
 
     <label for="number">No.:</label>
     <input type="text" id="number" required>
@@ -135,7 +143,7 @@
     <div class="camera-container">
       <label>กล้องถ่ายภาพ:</label>
       <video id="video" autoplay playsinline style="display: none;"></video>
-      <canvas id="canvas" style="display: none;"></canvas>
+      <canvas id="canvas"></canvas>
 
       <div class="button-row">
         <button type="button" class="btn-blue" onclick="openCamera()">📷 เปิดกล้อง</button>
@@ -327,14 +335,44 @@
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
 
-  fetch("https://yourflow.com", {
+  fetch("https://prod-93.southeastasia.logic.azure.com:443/workflows/666f4ae7915e4ae59ff600209140ef71/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=mliK9jNrbZMD4UNcWToHPn4LfOgi0Nr-n8dQiYaveDk", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id })  // ส่งไปหลังบ้านให้ดึงข้อมูลเอง
   })
   .then(res => res.json())
   .then(data => {
+      const item = data.value?.[0] || data; // ขึ้นอยู่กับโครงสร้างข้อมูล
     // แสดงผลข้อมูล
+
+    document.getElementById('inspector').value = item.ValveCheckBy || "-",
+    document.getElementById('round').value = item.ValveCheckRound || "-",
+    document.getElementById('number').value = item.ValveId || "-",
+    document.getElementById('status').value = item.ValveStatus?.Value || "-",
+    document.getElementById('notification').value = item.ValveIsCheck?.Value || "-",
+    document.getElementById('note').value = item.ValveNote || "-" 
+
+      // แสดงภาพใน <canvas>
+      const imageUrlCurrent = item.ValveCurrentImageUrl;
+      if (imageUrlCurrent) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+
+        img.onload = function () {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0); // วาดที่มุมซ้ายบนของ canvas
+          canvas.style.display = 'block';
+        };
+
+        img.onerror = function () {
+          console.error("โหลดรูปภาพไม่ได้:", imageUrlCurrent);
+        };
+
+        img.src = imageUrlCurrent;
+      }
+
   });
 
 </script>
