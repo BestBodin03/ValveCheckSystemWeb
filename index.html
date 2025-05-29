@@ -344,6 +344,15 @@
       throw error;
     }
   }
+               function goBack() {
+            // ตรวจสอบว่ามี history หรือไม่
+            if (document.referrer && document.referrer.includes('tableValve.html')) {
+                window.history.back();
+            } else {
+                // หากไม่มี history หรือไม่ได้มาจาก tableValve.html ให้ redirect ตรงไป
+                window.location.href = 'tableValve.html';
+            }
+        }
 
   function resetForm() {
     document.getElementById('buildingForm').reset();
@@ -398,16 +407,6 @@
 
         img.src = imageUrlCurrent;
       }
-
-             function goBack() {
-            // ตรวจสอบว่ามี history หรือไม่
-            if (document.referrer && document.referrer.includes('tableValve.html')) {
-                window.history.back();
-            } else {
-                // หากไม่มี history หรือไม่ได้มาจาก tableValve.html ให้ redirect ตรงไป
-                window.location.href = 'tableValve.html';
-            }
-        }
 
   });
 
