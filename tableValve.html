@@ -60,7 +60,7 @@
   .then(data => {
     const tbody = document.querySelector("#valveTable tbody");
 
-    data.value.forEach(item => {
+    data.forEach(item => {
     const row = document.createElement("tr");
     row.innerHTML = `
         <td><button class="btn-check" data-id="${item.ID}">ตรวจสอบ</button></td>
