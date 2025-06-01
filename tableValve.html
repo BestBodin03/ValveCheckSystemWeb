@@ -68,8 +68,16 @@
         <td>${item.ValveId}</td>
         <td>${item.ValveStatus?.Value || "-"}</td>
         <td>${item.ValveIsCheck?.Value || "-"}</td>
-        <td><img src="${item.ValveStandardImageUrl}" alt="ไม่มีรูป" style="max-width:144px; max-height:144px;" /></td>
-        <td><img src="${item.ValveCurrentImageUrl}" alt="ไม่มีรูป" style="max-width:144px; max-height:144px;" /></td>
+        <td>
+          ${item.ValveStandardImageUrl 
+            ? `<img src="${item.ValveStandardImageUrl}" alt="มาตรฐาน" style="max-width:144px; max-height:144px;" />` 
+            : 'ไม่มีรูป'}
+        </td>
+        <td>
+          ${item.ValveCurrentImageUrl 
+            ? `<img src="${item.ValveCurrentImageUrl}" alt="ปัจจุบัน" style="max-width:144px; max-height:144px;" />` 
+            : 'ไม่มีรูป'}
+        </td>
         <td>${item.ValveCheckRound}</td>
         <td>${item.ValveBrand}</td>
         <td>${item.ZoneFK?.Value || "-"}</td>
