@@ -56,34 +56,36 @@
     },
     body: JSON.stringify({}) // หาก Flow ต้องการ input ก็ส่งในนี้
   })
-  .then(res => res.json())
+
+    .then(res => res.json())
   .then(data => {
     const tbody = document.querySelector("#valveTable tbody");
 
     data.forEach(item => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
+      const row = document.createElement("tr");
+
+      // สร้าง cell สำหรับรูป
+      let imageCell = "";
+      if (item.base64) {
+        imageCell = `<img src="data:image/jpeg;base64,${item.base64}" alt="ภาพวาล์ว" style="max-width:144px; max-height:144px;" />`;
+      } else {
+        imageCell = "ไม่มีรูป";
+      }
+
+      row.innerHTML = `
         <td><button class="btn-check" data-id="${item.ID}">ตรวจสอบ</button></td>
-        <td>${item.ID}</td>
+        <td>${item.fileName}</td>
         <td>${item.ValveId}</td>
         <td>${item.ValveStatus?.Value || "-"}</td>
         <td>${item.ValveIsCheck?.Value || "-"}</td>
-        <td>
-          ${item.ValveStandardImageUrl 
-            ? `<img src="${item.ValveStandardImageUrl}" alt="มาตรฐาน" style="max-width:144px; max-height:144px;" />` 
-            : 'ไม่มีรูป'}
-        </td>
-        <td>
-          ${item.ValveCurrentImageUrl 
-            ? `<img src="${item.ValveCurrentImageUrl}" alt="ปัจจุบัน" style="max-width:144px; max-height:144px;" />` 
-            : 'ไม่มีรูป'}
-        </td>
+        <td>${imageCell}</td>
+        <td>${imageCell}</td>
         <td>${item.ValveCheckRound}</td>
         <td>${item.ValveBrand}</td>
         <td>${item.ZoneFK?.Value || "-"}</td>
         <td>${new Date(item.ValveCheckDate).toLocaleString("th-TH")}</td>
-    `;
-    tbody.appendChild(row);
+      `;
+      tbody.appendChild(row);
     });
 
       document.querySelectorAll(".btn-check").forEach(button => {
@@ -92,10 +94,11 @@
       window.location.href = `index.html?id=${encodeURIComponent(id)}`;
     });
   });
-  })
+})
   .catch(error => {
     console.error("เกิดข้อผิดพลาด:", error);
   });
+
 </script>
 
 </body>
