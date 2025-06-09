@@ -1,0 +1,9 @@
+Set(GeneratedValveId, 
+  Text(Now(), "yyMMdd") & 
+  Char(RandBetween(65, 90)) & 
+  Char(RandBetween(65, 90)) & 
+  Char(RandBetween(65, 90)) & 
+  Char(RandBetween(65, 90)) & 
+  Char(RandBetween(65, 90)) & 
+  Char(RandBetween(65, 90))
+),

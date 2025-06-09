@@ -9,7 +9,7 @@
       border-collapse: collapse;
       margin-top: 20px;
     }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; width: 200;}
     th { background: #f4f4f4; }
     img { width: 144 }
     .table-wrapper {
@@ -47,7 +47,7 @@
 
 <script>
   // แปะ URL จริงจาก Flow Get Data Flow - Power Automate
-  const url = "https://prod-20.southeastasia.logic.azure.com:443/workflows/0bb2b8bd03d94015b71e801503d2a845/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uQwUtvsX5dBKd64l0Hq7aUGM1t9tIQLlO4i0aQtbu6k"; 
+  const url = "secret"; 
 
   fetch(url, {
     method: "POST", // หรือ GET ถ้า Flow รองรับ
